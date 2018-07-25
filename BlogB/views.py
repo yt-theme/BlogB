@@ -19,16 +19,40 @@ def getMenu(request):
     if request.method == 'GET':
         dat =  JsonResponse([
             {
-                'label': 'file1',
+                'label': 'file',
                 'action': ''
             },
             {
-                'label': 'file11',
+                'label': 'edit',
                 'action': ''
             },
             {
-                'label': 'file111',
+                'label': 'select',
                 'action': ''
             }
         ], safe=False)
-        return dat  
+        return dat
+def getNotifyNumber(request):
+    if request.method == 'GET':
+        dat = JsonResponse({'data': 11}, safe=False)
+        return dat
+def getDesktopIconList(request):
+    if request.method == 'POST':
+        dat = JsonResponse([
+            {
+                'label': 'file1',
+                'img': '',
+                'url': ''
+            },
+            {
+                'label': 'file2',
+                'img': '',
+                'url': ''
+            },
+            {
+                'label': 'file3',
+                'img': '',
+                'url': ''
+            }
+        ], safe=False)
+        return dat

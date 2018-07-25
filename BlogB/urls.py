@@ -26,4 +26,6 @@ urlpatterns = [
     url(r'^post/$',views.post),
     url(r'^getRightSidebar/$',views.getRightSidebar),
     url(r'^getMenu/$',views.getMenu),
+    url(r'^getNotifyNumber/$',views.getNotifyNumber),
+    url(r'^getDesktopIconList/$',views.getDesktopIconList),
 ]
