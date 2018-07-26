@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render, render_to_response
 from django.http import JsonResponse
+import time
 def post(request):
     if request.method == 'GET':
         return render(request,'post.html')
@@ -42,17 +43,68 @@ def getDesktopIconList(request):
             {
                 'label': 'file1',
                 'img': '',
-                'url': ''
+                'url': '',
+                'id':  '0'
             },
             {
                 'label': 'file2',
                 'img': '',
-                'url': ''
+                'url': '',
+                'id': '1'
             },
             {
                 'label': 'file3',
                 'img': '',
-                'url': ''
+                'url': '',
+                'id': '2'
             }
         ], safe=False)
         return dat
+def getSidebarIconList(request):
+    if request.method == 'POST':
+        dat = JsonResponse([
+            {
+                'label': 'Baidu',
+                'img': '',
+                'url': 'https://www.baidu.com'
+            },
+            {
+                'label': 'Arch Wiki',
+                'img': '',
+                'url': 'https://wiki.archlinux.org/'
+            },
+             {
+                'label': 'Kernel',
+                'img': '',
+                'url': 'https://www.kernel.org/'
+            },
+             {
+                'label': 'Distrowatch',
+                'img': '',
+                'url': 'https://distrowatch.org/'
+            }
+        ], safe=False)
+        return dat
+def getWindowContent(request):
+    if request.method == 'POST':
+        id = request.POST.get('id','')
+        if id == '0':
+            return JsonResponse({
+                'id': id,
+                'data': [
+                    {
+                        'h1': 'file1',
+                        'content': '233'
+                    }    
+                ]
+            })
+        else:
+            return JsonResponse({
+                'id': id,
+                'data': [
+                    {
+                        'h1': 'not file1',
+                        'content': '233'
+                    }    
+                ]
+            })

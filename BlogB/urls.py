@@ -28,4 +28,6 @@ urlpatterns = [
     url(r'^getMenu/$',views.getMenu),
     url(r'^getNotifyNumber/$',views.getNotifyNumber),
     url(r'^getDesktopIconList/$',views.getDesktopIconList),
+    url(r'^getSidebarIconList/$',views.getSidebarIconList),
+    url(r'^getWindowContent/$',views.getWindowContent),
 ]
