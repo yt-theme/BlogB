@@ -9,13 +9,6 @@ def post(request):
         username = request.POST.get('username','')
         password = request.POST.get('password','')
         return JsonResponse({'username': username, "password": password})
-def getRightSidebar(request):
-    if request.method == 'GET':
-        a = request.GET.get('a',0)
-        b = request.GET.get('b',0)
-        res = float(a) + float(b)
-        response = JsonResponse({'res':res}, safe=False)
-        return response
 def getMenu(request):
     if request.method == 'GET':
         dat =  JsonResponse([
@@ -41,22 +34,22 @@ def getDesktopIconList(request):
     if request.method == 'POST':
         dat = JsonResponse([
             {
-                'label': 'file1',
+                'label': 'The Blog Start',
                 'img': '',
                 'url': '',
-                'id':  '0'
+                'id':  'num1'
             },
             {
                 'label': 'file2',
                 'img': '',
                 'url': '',
-                'id': '1'
+                'id': 'num2'
             },
             {
                 'label': 'file3',
                 'img': '',
                 'url': '',
-                'id': '2'
+                'id': 'num3'
             }
         ], safe=False)
         return dat
@@ -69,16 +62,21 @@ def getSidebarIconList(request):
                 'url': 'https://www.baidu.com'
             },
             {
-                'label': 'Arch Wiki',
+                'label': 'Arch',
                 'img': '',
-                'url': 'https://wiki.archlinux.org/'
+                'url': 'https://www.archlinux.org/'
             },
-             {
+            {
+                'label': 'Github',
+                'img': '',
+                'url': 'https://github.com/'
+            },
+            {
                 'label': 'Kernel',
                 'img': '',
                 'url': 'https://www.kernel.org/'
             },
-             {
+            {
                 'label': 'Distrowatch',
                 'img': '',
                 'url': 'https://distrowatch.org/'
@@ -88,19 +86,22 @@ def getSidebarIconList(request):
 def getWindowContent(request):
     if request.method == 'POST':
         id = request.POST.get('id','')
-        if id == '0':
+        if id == 'num1':
             return JsonResponse({
                 'id': id,
+                'contentType': 'web',
                 'data': [
                     {
-                        'h1': 'file1',
-                        'content': '233'
+                        'h1': 'The Blog Start',
+                        'content': '<div style=line-height:2;margin-top:40px><p>Today is 2018.7.27 17:25:51</p>' +
+                            '<p>Good-luck</p></div>',
                     }    
                 ]
             })
         else:
             return JsonResponse({
                 'id': id,
+                'contentType': 'txt',
                 'data': [
                     {
                         'h1': 'not file1',
