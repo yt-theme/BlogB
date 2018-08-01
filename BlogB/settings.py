@@ -28,7 +28,6 @@ DEBUG = True
 # ALLOWED_HOSTS = ['192.168.0.141','localhost']
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -83,11 +82,11 @@ WSGI_APPLICATION = 'BlogB.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': None,
     }
 }
-
+from mongoengine import connect
+connect('blog')
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators

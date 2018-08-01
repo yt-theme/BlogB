@@ -2,6 +2,17 @@ from django.http import HttpResponse
 from django.shortcuts import render, render_to_response
 from django.http import JsonResponse
 import time
+from . import mongodb
+from pymongo import MongoClient
+def dbIndex(request):
+    user1 = mongodb.User(
+            username='aa',
+            website='www.google.com',
+            tags=['111','121','111']
+    )
+    user1.save()
+    Oid = user1.id
+    return HttpResponse(Oid)
 def post(request):
     if request.method == 'GET':
         return render(request,'post.html')
@@ -109,3 +120,25 @@ def getWindowContent(request):
                     }    
                 ]
             })
+def getSidebarPopContent(request):
+    if request.method == 'POST':
+        id = request.POST.get('id','')
+        dat = {
+            'id': id,
+            'content': []
+         }
+        if id == 'num0':
+            dat['content'].append('the first update')
+            dat['content'].append('the second update')
+            dat['content'].append('the third update')
+        else:
+            dat['content'].append( 'other')
+        dat['content'].reverse()
+        return JsonResponse(dat)
+def getSidebarPopEditPasswordCheck(request): 
+    if request.method == 'POST':
+        pwd = request.POST.get('pwd','')
+        if pwd == 'root':
+            return JsonResponse({'data': 'true'})
+        else:
+            return JsonResponse({'data': 'false'})

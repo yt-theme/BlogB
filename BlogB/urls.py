@@ -29,4 +29,7 @@ urlpatterns = [
     url(r'^getDesktopIconList/$',views.getDesktopIconList),
     url(r'^getSidebarIconList/$',views.getSidebarIconList),
     url(r'^getWindowContent/$',views.getWindowContent),
+    url(r'^getSidebarPopContent/$',views.getSidebarPopContent),
+    url(r'^dbIndex/$',views.dbIndex),
+    url(r'^getSidebarPopEditPasswordCheck/$',views.getSidebarPopEditPasswordCheck),
 ]
