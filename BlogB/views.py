@@ -144,3 +144,25 @@ def getSubmitNewArticle(request):
         }
         col.save(dbDat)
         return JsonResponse({'res': 'ok'})
+def getSubmitEditArticle(request):
+    if request.method == 'POST':
+        id          = request.POST.get('id')
+        h1          = request.POST.get('h1')
+        contentType = request.POST.get('contentType')
+        content     = request.POST.get('content')
+
+        col = db.desktopIconList
+        col.update({"id":id},{"$set": {
+            "label":h1,
+            "img": '',
+            "url": '',
+            "id": id,
+            "content" : {
+                "contentType": contentType,
+                "data": [{
+                    "h1": h1,
+                    "content": content
+                }]
+            }
+        }})
+        return JsonResponse({'res': 'ok'})
