@@ -3,7 +3,11 @@ from django.shortcuts import render, render_to_response
 from django.http import JsonResponse
 import time
 from . import mongodb
+############## db ##################
 from pymongo import MongoClient
+conn = MongoClient('localhost', 27017)
+db = conn.blog
+############## eb end ##############
 def dbIndex(request):
     user1 = mongodb.User(
             username='aa',
@@ -43,26 +47,12 @@ def getNotifyNumber(request):
         return dat
 def getDesktopIconList(request):
     if request.method == 'POST':
-        dat = JsonResponse([
-            {
-                'label': 'The Blog Start',
-                'img': '',
-                'url': '',
-                'id':  'num1'
-            },
-            {
-                'label': 'file2',
-                'img': '',
-                'url': '',
-                'id': 'num2'
-            },
-            {
-                'label': 'file3',
-                'img': '',
-                'url': '',
-                'id': 'num3'
-            }
-        ], safe=False)
+        reqArr = []
+        col = db.desktopIconList
+        for i in col.find():
+            i.pop('_id')
+            reqArr.append(i)
+        dat = JsonResponse(reqArr, safe=False)
         return dat
 def getSidebarIconList(request):
     if request.method == 'POST':
@@ -97,26 +87,16 @@ def getSidebarIconList(request):
 def getWindowContent(request):
     if request.method == 'POST':
         id = request.POST.get('id','')
-        if id == 'num1':
+        if id:
+            findDat = db.desktopIconList.find_one({"id":id})
+            print(id)
             return JsonResponse({
-                'id': id,
-                'contentType': 'web',
+                'id': findDat['id'],
+                'contentType': findDat['content']['contentType'],
                 'data': [
                     {
-                        'h1': 'The Blog Start',
-                        'content': '<div style=line-height:2;margin-top:40px><p>Today is 2018.7.27 17:25:51</p>' +
-                            '<p>Good-luck</p></div>',
-                    }    
-                ]
-            })
-        else:
-            return JsonResponse({
-                'id': id,
-                'contentType': 'txt',
-                'data': [
-                    {
-                        'h1': 'not file1',
-                        'content': '233'
+                        'h1': findDat['content']['data'][0]['h1'],
+                        'content': findDat['content']['data'][0]['content'],
                     }    
                 ]
             })
@@ -142,3 +122,25 @@ def getSidebarPopEditPasswordCheck(request):
             return JsonResponse({'data': 'true'})
         else:
             return JsonResponse({'data': 'false'})
+def getSubmitNewArticle(request):
+    if request.method == 'POST':
+        h1          = request.POST.get('h1')
+        contentType = request.POST.get('contentType')
+        content     = request.POST.get('content')
+        col = db.desktopIconList
+        times = time.time()
+        dbDat = {
+            "label":h1,
+            "img": '',
+            "url": '',
+            "id": str(round( times * 1000)),
+            "content" : {
+                "contentType": contentType,
+                "data": [{
+                    "h1": h1,
+                    "content": content
+                }]
+            }
+        }
+        col.save(dbDat)
+        return JsonResponse({'res': 'ok'})

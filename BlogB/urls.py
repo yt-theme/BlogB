@@ -32,4 +32,5 @@ urlpatterns = [
     url(r'^getSidebarPopContent/$',views.getSidebarPopContent),
     url(r'^dbIndex/$',views.dbIndex),
     url(r'^getSidebarPopEditPasswordCheck/$',views.getSidebarPopEditPasswordCheck),
+    url(r'^getSubmitNewArticle/$',views.getSubmitNewArticle),
 ]
