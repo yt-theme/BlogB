@@ -108,7 +108,7 @@ def getSidebarPopContent(request):
     if request.method == 'POST':
         id = request.POST.get('id','')
         col = db.desktopIconList
-        findDat = col.find()
+        findDat = col.find({},{'label':1,'date':1,'id':1})
         # findDat = col.find({}, {"label": 1})
         dat = {
             'id': id,
