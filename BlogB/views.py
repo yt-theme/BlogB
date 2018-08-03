@@ -51,7 +51,8 @@ def getDesktopIconList(request):
     if request.method == 'POST':
         reqArr = []
         col = db.desktopIconList
-        for i in col.find():
+        findData = col.find()
+        for i in findData:
             i.pop('_id')
             i.pop('content')
             reqArr.append(i)
@@ -106,16 +107,21 @@ def getWindowContent(request):
 def getSidebarPopContent(request):
     if request.method == 'POST':
         id = request.POST.get('id','')
+        col = db.desktopIconList
+        findDat = col.find()
+        # findDat = col.find({}, {"label": 1})
         dat = {
             'id': id,
             'content': []
          }
         if id == 'num0':
-            dat['content'].append('the first update')
-            dat['content'].append('the second update')
-            dat['content'].append('the third update')
+            for i in findDat:
+                label = i['label']
+                date  = i['date']
+                id    = i['id']
+                dat['content'].append({'label':label,'date':date,'id':id})
         else:
-            dat['content'].append( 'other')
+            dat['content'].append({'label': 'other'})
         dat['content'].reverse()
         return JsonResponse(dat)
 def getSidebarPopEditPasswordCheck(request): 
@@ -172,4 +178,10 @@ def getSubmitEditArticle(request):
                 }]
             }
         }})
+        return JsonResponse({'res': 'ok'})
+def getDeleteSidebarPopHistory(request):
+    if request.method == 'POST':
+        id = request.POST.get('id')
+        col = db.desktopIconList
+        col.remove({'id':id})
         return JsonResponse({'res': 'ok'})
