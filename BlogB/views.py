@@ -43,7 +43,9 @@ def getMenu(request):
         return dat
 def getNotifyNumber(request):
     if request.method == 'GET':
-        dat = JsonResponse({'data': 11}, safe=False)
+        col = db.desktopIconList
+        countArticle = col.find().count()
+        dat = JsonResponse({'data': countArticle}, safe=False)
         return dat
 def getDesktopIconList(request):
     if request.method == 'POST':
@@ -51,6 +53,7 @@ def getDesktopIconList(request):
         col = db.desktopIconList
         for i in col.find():
             i.pop('_id')
+            i.pop('content')
             reqArr.append(i)
         dat = JsonResponse(reqArr, safe=False)
         return dat
@@ -125,6 +128,7 @@ def getSidebarPopEditPasswordCheck(request):
 def getSubmitNewArticle(request):
     if request.method == 'POST':
         h1          = request.POST.get('h1')
+        date          = request.POST.get('date')
         contentType = request.POST.get('contentType')
         content     = request.POST.get('content')
         col = db.desktopIconList
@@ -133,6 +137,7 @@ def getSubmitNewArticle(request):
             "label":h1,
             "img": '',
             "url": '',
+            "date": date,
             "id": str(round( times * 1000)),
             "content" : {
                 "contentType": contentType,
@@ -148,6 +153,7 @@ def getSubmitEditArticle(request):
     if request.method == 'POST':
         id          = request.POST.get('id')
         h1          = request.POST.get('h1')
+        date          = request.POST.get('date')
         contentType = request.POST.get('contentType')
         content     = request.POST.get('content')
 
@@ -156,6 +162,7 @@ def getSubmitEditArticle(request):
             "label":h1,
             "img": '',
             "url": '',
+            "date": date,
             "id": id,
             "content" : {
                 "contentType": contentType,
