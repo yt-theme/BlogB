@@ -93,9 +93,9 @@ def getWindowContent(request):
         id = request.POST.get('id','')
         if id:
             findDat = db.desktopIconList.find_one({"id":id})
-            print(id)
             return JsonResponse({
                 'id': findDat['id'],
+                'img': findDat['img'],
                 'contentType': findDat['content']['contentType'],
                 'data': [
                     {
@@ -134,14 +134,15 @@ def getSidebarPopEditPasswordCheck(request):
 def getSubmitNewArticle(request):
     if request.method == 'POST':
         h1          = request.POST.get('h1')
-        date          = request.POST.get('date')
+        date        = request.POST.get('date')
+        iconLabel   = request.POST.get('img')
         contentType = request.POST.get('contentType')
         content     = request.POST.get('content')
         col = db.desktopIconList
         times = time.time()
         dbDat = {
             "label":h1,
-            "img": '',
+            "img": iconLabel,
             "url": '',
             "date": date,
             "id": str(round( times * 1000)),
@@ -160,13 +161,14 @@ def getSubmitEditArticle(request):
         id          = request.POST.get('id')
         h1          = request.POST.get('h1')
         date          = request.POST.get('date')
+        iconLabel   = request.POST.get('img')
         contentType = request.POST.get('contentType')
         content     = request.POST.get('content')
 
         col = db.desktopIconList
         col.update({"id":id},{"$set": {
             "label":h1,
-            "img": '',
+            "img": iconLabel,
             "url": '',
             "date": date,
             "id": id,
