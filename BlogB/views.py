@@ -3,11 +3,18 @@ from django.shortcuts import render, render_to_response
 from django.http import JsonResponse
 import time
 from . import mongodb
+from . import publicFun
+import random
+from channels.generic.websocket import WebsocketConsumer
+import json
 ############## db ##################
 from pymongo import MongoClient
 conn = MongoClient('localhost', 27017)
 db = conn.blog
 ############## eb end ##############
+############## global ##############
+passwdKey = str(random.randint(0, 999999999999999999999999999999999999999999999999999999999999999)).zfill(999)
+############## global end ##########
 def dbIndex(request):
     user1 = mongodb.User(
             username='aa',
@@ -124,10 +131,18 @@ def getSidebarPopContent(request):
             dat['content'].append({'label': 'other'})
         dat['content'].reverse()
         return JsonResponse(dat)
+# key and key check
+def setSidebarPopEditPasswordCheck(request):
+    global passwdKey
+    passwdKey = str(random.randint(0, 9999)).zfill(4)
+    if request.method == 'POST':
+        # set key
+        publicFun.sendMail(passwdKey)
+        return JsonResponse({'res': '...'})
 def getSidebarPopEditPasswordCheck(request): 
     if request.method == 'POST':
         pwd = request.POST.get('pwd','')
-        if pwd == 'root':
+        if str(pwd) == passwdKey:
             return JsonResponse({'data': 'true'})
         else:
             return JsonResponse({'data': 'false'})
@@ -187,3 +202,7 @@ def getDeleteSidebarPopHistory(request):
         col = db.desktopIconList
         col.remove({'id':id})
         return JsonResponse({'res': 'ok'})
+def getWeather(request):
+    if request.method == 'POST':
+        dat = publicFun.getPositionWeather()
+        return JsonResponse({'res': dat})

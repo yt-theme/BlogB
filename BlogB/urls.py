@@ -31,8 +31,10 @@ urlpatterns = [
     url(r'^getWindowContent/$',views.getWindowContent),
     url(r'^getSidebarPopContent/$',views.getSidebarPopContent),
     url(r'^dbIndex/$',views.dbIndex),
+    url(r'^setSidebarPopEditPasswordCheck/$',views.setSidebarPopEditPasswordCheck),
     url(r'^getSidebarPopEditPasswordCheck/$',views.getSidebarPopEditPasswordCheck),
     url(r'^getSubmitNewArticle/$',views.getSubmitNewArticle),
     url(r'^getSubmitEditArticle/$',views.getSubmitEditArticle),
     url(r'^getDeleteSidebarPopHistory/$',views.getDeleteSidebarPopHistory),
+    url(r'^getWeather/$',views.getWeather),
 ]

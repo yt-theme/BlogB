@@ -40,6 +40,13 @@ INSTALLED_APPS = [
     'corsheaders',
 ]
 
+# CHANNWEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'asgiref.inmemory.ChannelLayer',
+#         'ROUTING': 'BlogB.routing.channel_routing'
+#     }
+# }
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
