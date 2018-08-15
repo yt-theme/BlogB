@@ -37,4 +37,5 @@ urlpatterns = [
     url(r'^getSubmitEditArticle/$',views.getSubmitEditArticle),
     url(r'^getDeleteSidebarPopHistory/$',views.getDeleteSidebarPopHistory),
     url(r'^getWeather/$',views.getWeather),
+    url(r'^searchArticle/$',views.searchArticle),
 ]

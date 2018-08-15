@@ -7,13 +7,15 @@ from . import publicFun
 import random
 from channels.generic.websocket import WebsocketConsumer
 import json
+import re
 ############## db ##################
 from pymongo import MongoClient
 conn = MongoClient('localhost', 27017)
 db = conn.blog
 ############## eb end ##############
 ############## global ##############
-passwdKey = str(random.randint(0, 999999999999999999999999999999999999999999999999999999999999999)).zfill(999)
+# passwdKey = str(random.randint(0, 999999999999999999999999999999999999999999999999999999999999999)).zfill(999)
+passwdKey = str('6666')
 ############## global end ##########
 def dbIndex(request):
     user1 = mongodb.User(
@@ -206,3 +208,36 @@ def getWeather(request):
     if request.method == 'POST':
         dat = publicFun.getPositionWeather()
         return JsonResponse({'res': dat})
+def searchArticle(request):
+    if request.method == 'POST':
+        keyword = request.POST.get('dat','')
+        col = db.desktopIconList
+        allCollectionItem = col.find()
+
+        tmp_label_arr = []
+        for i in allCollectionItem:
+            if re.search(keyword, i['label']):
+                tmp_label_arr.append(i['label'])
+
+        # match arr
+        # if keyword in tmp_label_arr:
+            
+        #     print('in')
+
+        #     result_col = col.find({'label': keyword})
+
+        reqArr = []
+        for i in tmp_label_arr:
+            result_col = col.find({'label': i})
+            for j in result_col:
+                j.pop('_id')
+                j.pop('content')
+                reqArr.append(j)
+
+        dat = JsonResponse(reqArr, safe=False)
+        return dat
+    else:
+        print('not in')
+        return JsonResponse({'res': 'notin'})
+
+

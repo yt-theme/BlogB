@@ -13,7 +13,8 @@ def getPositionWeather():
     Position_shi   = toPinyin.index('shi')
     sheng = ''.join(toPinyin[0:Position_sheng])
     shi = ''.join(toPinyin[Position_sheng + 1:Position_shi])
-    weatherUrl = 'http://qq.ip138.com/weather/' + sheng + '/' + shi + '.htm'
+    # weatherUrl = 'http://qq.ip138.com/weather/' + sheng + '/' + shi + '.htm'
+    weatherUrl = 'http://qq.ip138.com/weather/HeBei/QinHuangDao.htm'
     weatherObj = str(urllib.request.urlopen(weatherUrl).read(), encoding="gbk")
     # print(weatherObj)
     weather_pattern     = 'alt="(.+?)"'
@@ -21,7 +22,7 @@ def getPositionWeather():
     temperature_pattern = '<td>([-]?\d{1,2}.+)</td>'
     temperature         = re.findall(temperature_pattern, weatherObj)
     # print(weather[0] + temperature[0])
-    return pos_obj  + ' ' + weather[0] + ' ' + temperature[0]
+    return [pos_obj, weather[0], temperature[0]]
 def sendMail(strings):
     # sender
     sender = '16630501631@163.com'
