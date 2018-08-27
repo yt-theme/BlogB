@@ -24,6 +24,8 @@ urlpatterns = [
     # url(r'^params_test/$',params_test),
     # url(r'^params_test_reg/str(?P<str>\w+)page(?P<page>\d+)/$',params_test_reg),
     url(r'^post/$',views.post),
+    url(r'^checkLogin/$',views.checkLogin),
+    url(r'^login/$',views.login),
     url(r'^getMenu/$',views.getMenu),
     url(r'^getNotifyNumber/$',views.getNotifyNumber),
     url(r'^getDesktopIconList/$',views.getDesktopIconList),

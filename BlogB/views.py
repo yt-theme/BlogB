@@ -33,6 +33,44 @@ def post(request):
         username = request.POST.get('username','')
         password = request.POST.get('password','')
         return JsonResponse({'username': username, "password": password})
+def checkLogin(request):
+    if request.method == 'POST':
+        userToken = request.POST.get('token', '')
+        userName = request.POST.get('name', '')
+        userInfo = db.userInfo.find_one({'name': userName})
+        if  userInfo is not None:
+            if str(userInfo["token"]) == str(userToken):
+                return JsonResponse({'res': 'pass'})
+            else:
+                return JsonResponse({'res': 'error'})
+        else:
+            return JsonResponse({'res': 'error'})
+    else:
+        pass
+def login(request): 
+    if request.method == "POST":
+        userName = request.POST.get('name', '')
+        userPasswd = request.POST.get('passwd', '')
+        userInfo = db.userInfo.find_one({'name': userName})
+        if userInfo is not None:
+            if str(userInfo['passwd']) == str(userPasswd):
+                return JsonResponse({
+                    'res': {
+                        'state': 'ok',
+                        'token': userInfo['token'],
+                        'name': userName
+                    }
+                })
+            else:
+                return JsonResponse({
+                    'res':{'state': 'error'}
+                })
+        else:
+            return JsonResponse({
+                'res':{'state': 'error'}
+            })
+    else:
+        pass
 def getMenu(request):
     if request.method == 'GET':
         dat =  JsonResponse([
@@ -56,6 +94,8 @@ def getNotifyNumber(request):
         countArticle = col.find().count()
         dat = JsonResponse({'data': countArticle}, safe=False)
         return dat
+    else: 
+        pass
 def getDesktopIconList(request):
     if request.method == 'POST':
         reqArr = []
@@ -134,6 +174,8 @@ def getSidebarPopContent(request):
         dat['content'].reverse()
         return JsonResponse(dat)
 # key and key check
+# set pop pwd
+# set
 def setSidebarPopEditPasswordCheck(request):
     global passwdKey
     passwdKey = str(random.randint(0, 9999)).zfill(4)
@@ -141,6 +183,8 @@ def setSidebarPopEditPasswordCheck(request):
         # set key
         publicFun.sendMail(passwdKey)
         return JsonResponse({'res': '...'})
+# get pop pwd
+# get
 def getSidebarPopEditPasswordCheck(request): 
     if request.method == 'POST':
         pwd = request.POST.get('pwd','')
@@ -148,6 +192,7 @@ def getSidebarPopEditPasswordCheck(request):
             return JsonResponse({'data': 'true'})
         else:
             return JsonResponse({'data': 'false'})
+# New Article
 def getSubmitNewArticle(request):
     if request.method == 'POST':
         h1          = request.POST.get('h1')
@@ -155,24 +200,35 @@ def getSubmitNewArticle(request):
         iconLabel   = request.POST.get('img')
         contentType = request.POST.get('contentType')
         content     = request.POST.get('content')
-        col = db.desktopIconList
-        times = time.time()
-        dbDat = {
-            "label":h1,
-            "img": iconLabel,
-            "url": '',
-            "date": date,
-            "id": str(round( times * 1000)),
-            "content" : {
-                "contentType": contentType,
-                "data": [{
-                    "h1": h1,
-                    "content": content
-                }]
-            }
-        }
-        col.save(dbDat)
-        return JsonResponse({'res': 'ok'})
+        name        = request.POST.get('name')
+        token       = request.POST.get('token')
+
+        userInfo = db.userInfo.find_one({'token': token})
+        if userInfo is not None:
+            if userInfo['name'] == name:
+                col = db.desktopIconList
+                times = time.time()
+                dbDat = {
+                    "label":h1,
+                    "img": iconLabel,
+                    "url": '',
+                    "date": date,
+                    "id": str(round( times * 1000)),
+                    "content" : {
+                        "contentType": contentType,
+                        "data": [{
+                            "h1": h1,
+                            "content": content
+                        }]
+                    }
+                }
+                col.save(dbDat)
+                return JsonResponse({'res': 'ok'})
+            else:
+                return JsonResponse({'res': 'err'})
+        else:
+            pass
+# Edit Article
 def getSubmitEditArticle(request):
     if request.method == 'POST':
         id          = request.POST.get('id')
@@ -182,28 +238,48 @@ def getSubmitEditArticle(request):
         contentType = request.POST.get('contentType')
         content     = request.POST.get('content')
 
-        col = db.desktopIconList
-        col.update({"id":id},{"$set": {
-            "label":h1,
-            "img": iconLabel,
-            "url": '',
-            "date": date,
-            "id": id,
-            "content" : {
-                "contentType": contentType,
-                "data": [{
-                    "h1": h1,
-                    "content": content
-                }]
-            }
-        }})
-        return JsonResponse({'res': 'ok'})
+        name        = request.POST.get('name')
+        token       = request.POST.get('token')
+        userInfo = db.userInfo.find_one({'token': token})
+        if userInfo is not None:
+            if userInfo['name'] == name:
+                col = db.desktopIconList
+                col.update({"id":id},{"$set": {
+                    "label":h1,
+                    "img": iconLabel,
+                    "url": '',
+                    "date": date,
+                    "id": id,
+                    "content" : {
+                        "contentType": contentType,
+                        "data": [{
+                            "h1": h1,
+                            "content": content
+                        }]
+                    }
+                }})
+                return JsonResponse({'res': 'ok'})
+            else:
+                return JsonResponse({'res': 'err'})
+        else:
+            pass
+# Delete History
 def getDeleteSidebarPopHistory(request):
     if request.method == 'POST':
         id = request.POST.get('id')
-        col = db.desktopIconList
-        col.remove({'id':id})
-        return JsonResponse({'res': 'ok'})
+        name        = request.POST.get('name')
+        token       = request.POST.get('token')
+        userInfo = db.userInfo.find_one({'token': token})
+        if userInfo is not None:
+            if userInfo['name'] == name:
+                col = db.desktopIconList
+                col.remove({'id':id})
+                return JsonResponse({'res': 'ok'})
+            else:
+                return JsonResponse({'res': 'err'})
+        else:
+            pass
+
 def getWeather(request):
     if request.method == 'POST':
         dat = publicFun.getPositionWeather()
@@ -211,20 +287,25 @@ def getWeather(request):
 def searchArticle(request):
     if request.method == 'POST':
         keyword = request.POST.get('dat','')
+        typeword = request.POST.get('type','')
+
         col = db.desktopIconList
         allCollectionItem = col.find()
 
+        # search type
+        tmp_type_arr = []
+        for ti in allCollectionItem:
+            if typeword == 'All':
+                tmp_type_arr.append(ti)
+            else:
+                if ti['img'] == typeword:
+                    tmp_type_arr.append(ti)
+
+        # search keyword
         tmp_label_arr = []
-        for i in allCollectionItem:
+        for i in tmp_type_arr:
             if re.search(keyword, i['label']):
                 tmp_label_arr.append(i['label'])
-
-        # match arr
-        # if keyword in tmp_label_arr:
-            
-        #     print('in')
-
-        #     result_col = col.find({'label': keyword})
 
         reqArr = []
         for i in tmp_label_arr:
