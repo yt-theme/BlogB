@@ -8,6 +8,8 @@ import random
 from channels.generic.websocket import WebsocketConsumer
 import json
 import re
+import os
+import base64
 ############## db ##################
 from pymongo import MongoClient
 conn = MongoClient('localhost', 27017)
@@ -98,15 +100,39 @@ def getNotifyNumber(request):
         pass
 def getDesktopIconList(request):
     if request.method == 'POST':
+
+        userName = request.POST.get('name', '')
+        userToken = request.POST.get('token', '')
+
         reqArr = []
+
+        colUser = db.userInfo
         col = db.desktopIconList
-        findData = col.find()
-        for i in findData:
-            i.pop('_id')
-            i.pop('content')
-            reqArr.append(i)
-        dat = JsonResponse(reqArr, safe=False)
-        return dat
+
+        # name at userinfo ?
+        searchUser = colUser.find_one({'name': userName})
+
+        if searchUser['token'] == userToken:
+            if searchUser:
+                # check power
+                if str(searchUser['power']) == 'root':
+                    findData = col.find()
+                    for i in findData:
+                        i.pop('_id')
+                        i.pop('content')
+                        reqArr.append(i)
+                    dat = JsonResponse(reqArr, safe=False)
+                    return dat
+                else:
+                    findNormanData = col.find({'author': userName})
+                    for i in findNormanData:
+                        i.pop('_id')
+                        i.pop('content')
+                        reqArr.append(i)
+                    dat = JsonResponse(reqArr, safe=False)
+                    return dat
+        else:
+            return JsonResponse({'msg': 'err'})
 def getSidebarIconList(request):
     if request.method == 'POST':
         dat = JsonResponse([
@@ -156,23 +182,49 @@ def getWindowContent(request):
 def getSidebarPopContent(request):
     if request.method == 'POST':
         id = request.POST.get('id','')
+        userName = request.POST.get('name', '')
+        userToken = request.POST.get('token', '')
+
+        colUser = db.userInfo
         col = db.desktopIconList
-        findDat = col.find({},{'label':1,'date':1,'id':1})
-        # findDat = col.find({}, {"label": 1})
-        dat = {
-            'id': id,
-            'content': []
-         }
-        if id == 'num0':
-            for i in findDat:
-                label = i['label']
-                date  = i['date']
-                id    = i['id']
-                dat['content'].append({'label':label,'date':date,'id':id})
-        else:
-            dat['content'].append({'label': 'other'})
-        dat['content'].reverse()
-        return JsonResponse(dat)
+
+        searchUser = colUser.find_one({'name': userName})
+        if searchUser['token'] == userToken:
+            if str(searchUser['power']) == 'root':
+                findDat = col.find({},{'label':1,'date':1,'id':1})
+                # findDat = col.find({}, {"label": 1})
+                dat = {
+                    'id': id,
+                    'content': []
+                }
+                if id == 'num0':
+                    for i in findDat:
+                        label = i['label']
+                        date  = i['date']
+                        id    = i['id']
+                        dat['content'].append({'label':label,'date':date,'id':id})
+                else:
+                    dat['content'].append({'label': 'other'})
+                dat['content'].reverse()
+                return JsonResponse(dat)
+            else:
+                findDat = col.find({'author': userName})
+                print(findDat)
+                # findDat = col.find({}, {"label": 1})
+                dat = {
+                    'id': id,
+                    'content': []
+                }
+                if id == 'num0':
+                    for i in findDat:
+                        label = i['label']
+                        date  = i['date']
+                        id    = i['id']
+                        dat['content'].append({'label':label,'date':date,'id':id})
+                else:
+                    dat['content'].append({'label': 'other'})
+                dat['content'].reverse()
+                return JsonResponse(dat)
 # key and key check
 # set pop pwd
 # set
@@ -212,8 +264,9 @@ def getSubmitNewArticle(request):
                     "label":h1,
                     "img": iconLabel,
                     "url": '',
+                    "author": name,
                     "date": date,
-                    "id": str(round( times * 1000)),
+                    "id": str( times * 1000),
                     "content" : {
                         "contentType": contentType,
                         "data": [{
@@ -288,37 +341,117 @@ def searchArticle(request):
     if request.method == 'POST':
         keyword = request.POST.get('dat','')
         typeword = request.POST.get('type','')
+        userName = request.POST.get('name','')
+        userToken = request.POST.get('token','')
 
+        colUser = db.userInfo
         col = db.desktopIconList
-        allCollectionItem = col.find()
 
-        # search type
         tmp_type_arr = []
-        for ti in allCollectionItem:
-            if typeword == 'All':
-                tmp_type_arr.append(ti)
+
+        searchUser = colUser.find_one({'name': userName})
+        if searchUser['token'] == userToken:
+            if str(searchUser['power']) == 'root':
+                allCollectionItem = col.find()
+
+                # search type
+                for ti in allCollectionItem:
+                    if typeword == 'All':
+                        tmp_type_arr.append(ti)
+                    else:
+                        if ti['img'] == typeword:
+                            tmp_type_arr.append(ti)
+
+                # search keyword
+                tmp_label_arr = []
+                for i in tmp_type_arr:
+                    if re.search(keyword, i['label']):
+                        tmp_label_arr.append(i['label'])
+
+                reqArr = []
+                for i in tmp_label_arr:
+                    result_col = col.find({'label': i})
+                    for j in result_col:
+                        j.pop('_id')
+                        j.pop('content')
+                        reqArr.append(j)
+
+                dat = JsonResponse(reqArr, safe=False)
+                return dat
             else:
-                if ti['img'] == typeword:
-                    tmp_type_arr.append(ti)
+                allCollectionItem = col.find({'author': userName})
 
-        # search keyword
-        tmp_label_arr = []
-        for i in tmp_type_arr:
-            if re.search(keyword, i['label']):
-                tmp_label_arr.append(i['label'])
+                # search type
+                for ti in allCollectionItem:
+                    if typeword == 'All':
+                        tmp_type_arr.append(ti)
+                    else:
+                        if ti['img'] == typeword:
+                            tmp_type_arr.append(ti)
 
-        reqArr = []
-        for i in tmp_label_arr:
-            result_col = col.find({'label': i})
-            for j in result_col:
-                j.pop('_id')
-                j.pop('content')
-                reqArr.append(j)
+                # search keyword
+                tmp_label_arr = []
+                for i in tmp_type_arr:
+                    if re.search(keyword, i['label']):
+                        tmp_label_arr.append(i['label'])
 
-        dat = JsonResponse(reqArr, safe=False)
-        return dat
+                reqArr = []
+                for i in tmp_label_arr:
+                    result_col = col.find({'label': i})
+                    for j in result_col:
+                        j.pop('_id')
+                        j.pop('content')
+                        reqArr.append(j)
+
+                dat = JsonResponse(reqArr, safe=False)
+                return dat
+
     else:
         print('not in')
         return JsonResponse({'res': 'notin'})
+def uploadFile(request):
+    if request.method == "POST":
+        myFile = request.FILES.get("upFile", None)
+        name = request.POST.get("name", None)
+        author = request.POST.get("author", None)
 
+        if myFile != None:
 
+            file_path = os.path.join('img', str(round(time.time() * 1000)) + name)
+
+            store_f = open(file_path, 'wb')
+            for chunk in myFile.chunks():
+                store_f.write(chunk)
+            store_f.close()
+
+            f = open(file_path, 'rb')
+            base64_f = base64.b64encode(f.read())
+            f.close()
+
+            col = db.uploadFile
+            col.insert({
+                'base64': base64_f.decode(),
+                'name': name,
+                'author': author,
+                'type': '',
+                'date': time.time()
+            })
+            # print(base64_f.decode())
+            return JsonResponse({
+                "res": {
+                    'state': 'ok',
+                    'name': str(file_path),
+                    'author': str(author),
+                    'base64': base64_f.decode()
+                }
+            })
+        else:
+            return JsonResponse({
+                "res": {
+                    'state': 'err'
+                }
+            })
+# def resImg(request):
+#     if request.method == "POST":
+#         imgDat = open('img/1535512636311子弹.svg', 'rb').read()
+#         return HttpResponse(imgDat, mimetype="image/png")

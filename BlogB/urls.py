@@ -40,4 +40,6 @@ urlpatterns = [
     url(r'^getDeleteSidebarPopHistory/$',views.getDeleteSidebarPopHistory),
     url(r'^getWeather/$',views.getWeather),
     url(r'^searchArticle/$',views.searchArticle),
+    url(r'^uploadFile/$',views.uploadFile),
+    # url(r'^img/(?P<path>.*)/$', serve),
 ]
