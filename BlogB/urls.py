@@ -17,6 +17,10 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
+# from django.conf from settings
+from django.views.static import serve
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
@@ -41,5 +45,6 @@ urlpatterns = [
     url(r'^getWeather/$',views.getWeather),
     url(r'^searchArticle/$',views.searchArticle),
     url(r'^uploadFile/$',views.uploadFile),
-    # url(r'^img/(?P<path>.*)/$', serve),
-]
+    url(r'^img/(?P<path>.*)/$', serve, {'document_root': settings.STATICFILES_DIRS[0]}),
+    url(r'^getImgList/$',views.getImgList),
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

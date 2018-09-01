@@ -10,6 +10,7 @@ import json
 import re
 import os
 import base64
+from django.conf import settings
 ############## db ##################
 from pymongo import MongoClient
 conn = MongoClient('localhost', 27017)
@@ -104,33 +105,36 @@ def getDesktopIconList(request):
         userName = request.POST.get('name', '')
         userToken = request.POST.get('token', '')
 
-        reqArr = []
+        if userName and userToken:
+            reqArr = []
 
-        colUser = db.userInfo
-        col = db.desktopIconList
+            colUser = db.userInfo
+            col = db.desktopIconList
 
-        # name at userinfo ?
-        searchUser = colUser.find_one({'name': userName})
+            # name at userinfo ?
+            searchUser = colUser.find_one({'name': userName})
 
-        if searchUser['token'] == userToken:
-            if searchUser:
-                # check power
-                if str(searchUser['power']) == 'root':
-                    findData = col.find()
-                    for i in findData:
-                        i.pop('_id')
-                        i.pop('content')
-                        reqArr.append(i)
-                    dat = JsonResponse(reqArr, safe=False)
-                    return dat
-                else:
-                    findNormanData = col.find({'author': userName})
-                    for i in findNormanData:
-                        i.pop('_id')
-                        i.pop('content')
-                        reqArr.append(i)
-                    dat = JsonResponse(reqArr, safe=False)
-                    return dat
+            if searchUser['token'] == userToken:
+                if searchUser:
+                    # check power
+                    if str(searchUser['power']) == 'root':
+                        findData = col.find()
+                        for i in findData:
+                            i.pop('_id')
+                            i.pop('content')
+                            reqArr.append(i)
+                        dat = JsonResponse(reqArr, safe=False)
+                        return dat
+                    else:
+                        findNormanData = col.find({'author': userName})
+                        for i in findNormanData:
+                            i.pop('_id')
+                            i.pop('content')
+                            reqArr.append(i)
+                        dat = JsonResponse(reqArr, safe=False)
+                        return dat
+            else:
+                return JsonResponse({'msg': 'err'})
         else:
             return JsonResponse({'msg': 'err'})
 def getSidebarIconList(request):
@@ -209,7 +213,6 @@ def getSidebarPopContent(request):
                 return JsonResponse(dat)
             else:
                 findDat = col.find({'author': userName})
-                print(findDat)
                 # findDat = col.find({}, {"label": 1})
                 dat = {
                     'id': id,
@@ -407,51 +410,100 @@ def searchArticle(request):
                 return dat
 
     else:
-        print('not in')
         return JsonResponse({'res': 'notin'})
+
+# client upload
 def uploadFile(request):
     if request.method == "POST":
         myFile = request.FILES.get("upFile", None)
         name = request.POST.get("name", None)
         author = request.POST.get("author", None)
-
+###############################################
         if myFile != None:
+            # if req img name == dir in img name
+            imgDir = settings.STATIC_URL
+            imgNameList = os.listdir(imgDir.lstrip('/'))
+            if str(name) in imgNameList:
+                return JsonResponse({
+                    "res": {
+                        'state': 'exist'
+                    }
+                })
+###############################################                
+            else:
+                # else save img
+                file_path = os.path.join('img', name)
 
-            file_path = os.path.join('img', str(round(time.time() * 1000)) + name)
+                store_f = open(file_path, 'wb')
+                for chunk in myFile.chunks():
+                    store_f.write(chunk)
+                store_f.close()
+###############################################
+                # save to db
+                # f = open(file_path, 'rb')
+                # base64_f = base64.b64encode(f.read())
+                # f.close()
 
-            store_f = open(file_path, 'wb')
-            for chunk in myFile.chunks():
-                store_f.write(chunk)
-            store_f.close()
-
-            f = open(file_path, 'rb')
-            base64_f = base64.b64encode(f.read())
-            f.close()
-
-            col = db.uploadFile
-            col.insert({
-                'base64': base64_f.decode(),
-                'name': name,
-                'author': author,
-                'type': '',
-                'date': time.time()
-            })
-            # print(base64_f.decode())
-            return JsonResponse({
-                "res": {
-                    'state': 'ok',
-                    'name': str(file_path),
-                    'author': str(author),
-                    'base64': base64_f.decode()
-                }
-            })
+                col = db.uploadFile
+                col.insert({
+                    # 'base64': base64_f.decode(),
+                    'name': name,
+                    'author': author,
+                    'type': '',
+                    'date': time.time()
+                })
+                # print(base64_f.decode())
+                return JsonResponse({
+                    "res": {
+                        'state': 'ok',
+                        'name': str(file_path),
+                        'author': str(author),
+                        # 'base64': base64_f.decode()
+                    }
+                })
+###############################################
+            # return render_to_response('./img/1535512636311子弹.svg', locals())
         else:
             return JsonResponse({
                 "res": {
                     'state': 'err'
                 }
             })
-# def resImg(request):
-#     if request.method == "POST":
-#         imgDat = open('img/1535512636311子弹.svg', 'rb').read()
-#         return HttpResponse(imgDat, mimetype="image/png")
+# client download
+def getImgList(request):
+    if request.method == "POST":
+        userName = request.POST.get("author", None)
+        userToken = request.POST.get('token','')
+        if userName and userToken:
+            colUser = db.userInfo
+            col_f = db.uploadFile
+
+            searchUser = colUser.find_one({'name': userName})
+
+            if searchUser['token'] == userToken:
+                linkArr = col_f.find({"author": userName})
+                # get img dir list
+                imgDir = settings.STATIC_URL
+                imgListName_tmp = []
+                for list in linkArr:
+                    imgListName_tmp.append(
+                        imgDir + list['name']
+                    )
+                return JsonResponse({
+                    "res": {
+                        'state': 'ok',
+                        'list': imgListName_tmp
+                    }
+                })
+            else:
+                return JsonResponse({
+                    "res": {
+                        'state': 'err',
+                    }
+                })
+        else:
+            return JsonResponse({
+                "res": {
+                    'state': 'err',
+                }
+            })

@@ -163,5 +163,9 @@ CORS_ALLOW_HEADERS = (
 
 
 # media
-MEDIA_URL = 'img/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'img')
+STATIC_URL = '/img/'
+# STATIC_ROOT = '/home/a/pro/django/BlogB/img/'
+STATICFILES_DIRS = [
+    # '/root/BlogB/img/',
+    '/home/a/pro/django/BlogB/img/',
+]
